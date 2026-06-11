@@ -24,10 +24,8 @@ public class BitmapUtils {
         if (uri != null) {
             try (OutputStream os = context.getContentResolver().openOutputStream(uri)) {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
-                Toast.makeText(context, "长截图已成功保存到相册！", Toast.LENGTH_LONG).show();
             } catch (Exception e) {
                 e.printStackTrace();
-                Toast.makeText(context, "长截图保存失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }

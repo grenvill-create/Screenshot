@@ -113,6 +113,10 @@ public class CaptureService extends Service {
 
     private void showFloatingWindow() {
         if (floatingView != null) return;
+        if (!android.provider.Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "未授予悬浮窗权限，无法显示控制按钮！", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -161,18 +165,22 @@ public class CaptureService extends Service {
         
         Bitmap newFrame = getLatestBitmap();
         if (newFrame != null) {
-            if (currentLongBitmap == null) {
-                currentLongBitmap = newFrame;
-            } else {
-                // 调用手写的像素比对拼接算法
-                currentLongBitmap = ImageStitcher.stitch(currentLongBitmap, newFrame);
-            }
-            
-            // 通知无障碍服务进行滑动（向下滚动页面）
-            Intent broadcast = new Intent("com.grenvill.screenshot.ACTION_PERFORM_SCROLL");
-            sendBroadcast(broadcast);
+            // 将耗时的图像拼接算法放入后台线程，防止主线程卡死 (ANR)
+            new Thread(() -> {
+                if (currentLongBitmap == null) {
+                    currentLongBitmap = newFrame;
+                } else {
+                    currentLongBitmap = ImageStitcher.stitch(currentLongBitmap, newFrame);
+                }
+                
+                handler.post(() -> {
+                    if (!isCapturingSession) return;
+                    Intent broadcast = new Intent("com.grenvill.screenshot.ACTION_PERFORM_SCROLL");
+                    broadcast.setPackage(getPackageName()); // 避免 Android 14 安全拦截
+                    sendBroadcast(broadcast);
+                });
+            }).start();
         } else {
-            // 如果 ImageReader 还没准备好帧，稍微延迟重试
             handler.postDelayed(this::captureAndStitchFrame, 200);
         }
     }
@@ -192,7 +200,6 @@ public class CaptureService extends Service {
         bitmap.copyPixelsFromBuffer(buffer);
         image.close();
         
-        // 剪裁掉无效的 Padding 区域
         if (rowPadding > 0) {
             return Bitmap.createBitmap(bitmap, 0, 0, image.getWidth(), image.getHeight());
         }
@@ -202,14 +209,19 @@ public class CaptureService extends Service {
     private void stopCaptureSequence() {
         isCapturingSession = false;
         Intent broadcast = new Intent("com.grenvill.screenshot.ACTION_STOP_SCROLL");
+        broadcast.setPackage(getPackageName());
         sendBroadcast(broadcast);
         
         Toast.makeText(this, "停止截图，正在保存长图...", Toast.LENGTH_SHORT).show();
         
         if (currentLongBitmap != null) {
-            // 保存最终拼接的长图到系统相册
-            BitmapUtils.saveBitmapToGallery(this, currentLongBitmap);
+            Bitmap finalBitmap = currentLongBitmap;
             currentLongBitmap = null;
+            // 将极度耗时的 PNG 压缩和保存放入后台线程
+            new Thread(() -> {
+                BitmapUtils.saveBitmapToGallery(this, finalBitmap);
+                handler.post(() -> Toast.makeText(this, "长截图已成功保存到相册！", Toast.LENGTH_LONG).show());
+            }).start();
         }
     }
 
