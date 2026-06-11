@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#651FFF</color>
+    <color name="colorPrimaryVariant">#3D5AFE</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorSecondary">#00E5FF</color>
+    <color name="colorSecondaryVariant">#00B0FF</color>
+    <color name="colorOnSecondary">#000000</color>
+    
+    <color name="bg_gradient_start">#0f0c29</color>
+    <color name="bg_gradient_center">#302b63</color>
+    <color name="bg_gradient_end">#24243e</color>
+    
+    <color name="glass_card_bg">#1AFFFFFF</color>
+    <color name="glass_card_stroke">#33FFFFFF</color>
+    
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+    
+    <color name="status_ok">#00E676</color>
+    <color name="status_warning">#FF3D00</color>
+    
+    <color name="floating_pill_bg">#D91E1E1E</color>
+</resources>

@@ -133,10 +133,10 @@ public class CaptureService extends Service {
         params.x = 0;
         params.y = 100;
 
-        Button btnAction = floatingView.findViewById(R.id.btn_floating_action);
+        android.widget.ImageView btnAction = floatingView.findViewById(R.id.btn_floating_action);
         btnAction.setOnClickListener(v -> {
             if (!isCapturingSession) {
-                btnAction.setText("停止...");
+                btnAction.setImageResource(R.drawable.ic_stop);
                 btnAction.setEnabled(false);
                 startCaptureSequence();
                 
@@ -144,7 +144,7 @@ public class CaptureService extends Service {
                 handler.postDelayed(() -> btnAction.setEnabled(true), 1000);
             } else {
                 stopCaptureSequence();
-                btnAction.setText("开始");
+                btnAction.setImageResource(R.drawable.ic_play);
             }
         });
 
