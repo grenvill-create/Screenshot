@@ -75,7 +75,10 @@ public class MainActivity extends Activity {
                 } else {
                     startService(serviceIntent);
                 }
-                finish(); // Close activity, leaving floating window
+                // 在 Android 15 上，如果立即调用 finish() 可能会导致系统认为应用已退到后台，
+                // 从而拦截 startForegroundService 的执行并抛出异常。
+                // 改为将其退至后台，保留上下文状态。
+                moveTaskToBack(true);
             } else {
                 Toast.makeText(this, "录屏权限被拒绝", Toast.LENGTH_SHORT).show();
             }
