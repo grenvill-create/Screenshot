@@ -34,7 +34,11 @@ public class AutoScrollAccessibilityService extends AccessibilityService {
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.grenvill.screenshot.ACTION_PERFORM_SCROLL");
         filter.addAction("com.grenvill.screenshot.ACTION_STOP_SCROLL");
-        registerReceiver(controlReceiver, filter);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(controlReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(controlReceiver, filter);
+        }
     }
 
     @Override

@@ -61,16 +61,26 @@ public class CaptureService extends Service {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-        startForeground(1, new Notification.Builder(this, "CaptureServiceChannel")
+        Notification notification = new Notification.Builder(this, "CaptureServiceChannel")
                 .setContentTitle("长截屏服务运行中")
                 .setContentText("点击悬浮按钮开始截屏")
                 .setSmallIcon(android.R.drawable.ic_menu_camera)
-                .build());
+                .build();
+                
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(1, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
+        } else {
+            startForeground(1, notification);
+        }
 
         projectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         
         IntentFilter filter = new IntentFilter("com.grenvill.screenshot.ACTION_SCROLL_FINISHED");
-        registerReceiver(scrollReceiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(scrollReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(scrollReceiver, filter);
+        }
     }
 
     @Override
